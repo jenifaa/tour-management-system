@@ -29,6 +29,7 @@ process.on("SIGTERM", () => {
   process.exit(1);
 });
 process.on("unhandledRejection", () => {
+  // eslint-disable-next-line no-console
   console.log("UnhandledRejection detected");
   if (server) {
     server.close(() => {
