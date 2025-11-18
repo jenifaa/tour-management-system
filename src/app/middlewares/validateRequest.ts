@@ -6,8 +6,7 @@ export const validateRequest =
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       req.body = await zodSchema.parseAsync(req.body);
-      // eslint-disable-next-line no-console
-      console.log(req.body);
+     
       next();
     } catch (error) {
       next(error);
