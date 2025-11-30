@@ -13,7 +13,7 @@ import {
 import { JwtPayload } from "jsonwebtoken";
 import { envVars } from "../../config/env";
 
-const credentialsLogic = async (payload: Partial<IUser>) => {
+const credentialsLogin = async (payload: Partial<IUser>) => {
   const { email, password } = payload;
 
   const isUserExist = await User.findOne({ email });
@@ -79,7 +79,7 @@ const resetPassword = async (
 };
 
 export const AuthServices = {
-  credentialsLogic,
+  credentialsLogin,
   getNewAccessToken,
   resetPassword,
 };

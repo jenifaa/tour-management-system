@@ -5,27 +5,11 @@ import httpStatus from "http-status-codes";
 import { UserServices } from "./user.service";
 import { catchAsync } from "../../utils/catchAsync";
 import { sendResponse } from "../../utils/sendResponse";
+import { JwtPayload } from "jsonwebtoken";
 
 
 
-// const createUserFunction = async (req: Response, res: Response) => {
-//   const user = await UserServices.createUser(req.body);
-//   res.status(httpStatus.CREATED).json({
-//     message: " User Created Successfully",
-//     user,
-//   });
-// };
 
-// const createUser = async (req: Request, res: Response, next: NextFunction) => {
-//   try {
-//     createUserFunction(req,res);
-
-//   } catch (err: any) {
-
-//     console.log(err);
-//     next(err);
-//   }
-// };
 
 const createUser = catchAsync(
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -52,7 +36,7 @@ const updateUser = catchAsync(
     const verifiedToken = req.user;
     const payload = req.body;
     
-    const user = await UserServices.updateUser(userId, payload, verifiedToken);
+    const user = await UserServices.updateUser(userId, payload, verifiedToken as JwtPayload);
     sendResponse(res, {
       success: true,
       statusCode: httpStatus.CREATED,
