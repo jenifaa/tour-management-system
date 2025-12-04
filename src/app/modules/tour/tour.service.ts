@@ -1,3 +1,6 @@
+/* eslint-disable @typescript-eslint/no-dynamic-delete */
+import { excludeField } from "../../global.constant";
+import { tourSearchableField } from "./tour.constant";
 import { ITour, ITourType } from "./tour.interface";
 import { Tour, TourType } from "./tour.model";
 
@@ -7,13 +10,29 @@ const createTour = async (payload: ITour) => {
     throw new Error("A tour with this title already exists.");
   }
 
-
-
   const tour = await Tour.create(payload);
   return tour;
 };
-const getAllTours = async () => {
-  const tours = await Tour.find({});
+const getAllTours = async (query: Record<string, string>) => {
+  const filter = query;
+  const searchTerm = query.searchTerm || "";
+  const sort = query.sort || "-createdAt";
+ const fields = query.fields || ""
+
+
+ 
+  for (const field of excludeField) {
+    delete filter[field];
+  }
+
+  const searchQuery = {
+    $or: tourSearchableField.map((field) => ({
+      [field]: { $regex: searchTerm, $options: "i" },
+    })),
+  };
+
+  const tours = await Tour.find(searchQuery).find(filter).sort(sort).select(fields);
+
   const totalTours = await Tour.countDocuments();
 
   return {
@@ -29,8 +48,6 @@ const updateTours = async (id: string, payload: Partial<ITour>) => {
   if (!existingTour) {
     throw new Error("Tour does not exists");
   }
- 
-  
 
   const updatedTour = await Tour.findByIdAndUpdate(id, payload, {
     new: true,
@@ -43,42 +60,44 @@ const deleteTour = async (id: string) => {
 };
 
 const createTourType = async (payload: ITourType) => {
-    const existingTourType = await TourType.findOne({ name: payload.name });
+  const existingTourType = await TourType.findOne({ name: payload.name });
 
-    if (existingTourType) {
-        throw new Error("Tour type already exists.");
-    }
+  if (existingTourType) {
+    throw new Error("Tour type already exists.");
+  }
 
-    return await TourType.create({ name });
+  return await TourType.create({ name });
 };
 const getAllTourTypes = async () => {
-    return await TourType.find();
+  return await TourType.find();
 };
 
 const updateTourType = async (id: string, payload: ITourType) => {
-    const existingTourType = await TourType.findById(id);
-    if (!existingTourType) {
-        throw new Error("Tour type not found.");
-    }
+  const existingTourType = await TourType.findById(id);
+  if (!existingTourType) {
+    throw new Error("Tour type not found.");
+  }
 
-    const updatedTourType = await TourType.findByIdAndUpdate(id, payload, { new: true });
-    return updatedTourType;
+  const updatedTourType = await TourType.findByIdAndUpdate(id, payload, {
+    new: true,
+  });
+  return updatedTourType;
 };
 const deleteTourType = async (id: string) => {
-    const existingTourType = await TourType.findById(id);
-    if (!existingTourType) {
-        throw new Error("Tour type not found.");
-    }
+  const existingTourType = await TourType.findById(id);
+  if (!existingTourType) {
+    throw new Error("Tour type not found.");
+  }
 
-    return await TourType.findByIdAndDelete(id);
+  return await TourType.findByIdAndDelete(id);
 };
 export const TourService = {
-    createTour,
-    createTourType,
-    deleteTourType,
-    updateTourType,
-    getAllTourTypes,
-    getAllTours,
-    updateTours,
-    deleteTour,
+  createTour,
+  createTourType,
+  deleteTourType,
+  updateTourType,
+  getAllTourTypes,
+  getAllTours,
+  updateTours,
+  deleteTour,
 };
