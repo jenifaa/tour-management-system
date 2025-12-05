@@ -3,15 +3,14 @@ import { ITour, ITourType } from "./tour.interface";
 
 const tourTypeSchema = new Schema<ITourType>(
   {
-    name: { type: String, required: true ,unique:true},
+    name: { type: String, required: true, unique: true },
   },
   {
     timestamps: true,
   }
 );
 
-
-export const TourType = model<ITourType>("TourType",tourTypeSchema)
+export const TourType = model<ITourType>("TourType", tourTypeSchema);
 
 const tourSchema = new Schema<ITour>(
   {
@@ -22,6 +21,8 @@ const tourSchema = new Schema<ITour>(
     location: { type: String },
     costFrom: { type: Number },
     startDate: { type: Date },
+    departureLocation: { type: String },
+    arrivalLocation: { type: String },
     endDate: { type: Date },
     included: { type: [String], default: [] },
     excluded: { type: [String], default: [] },
@@ -44,8 +45,6 @@ const tourSchema = new Schema<ITour>(
     timestamps: true,
   }
 );
-
-
 
 tourSchema.pre("save", async function (next) {
   if (this.isModified("title")) {
@@ -76,9 +75,9 @@ tourSchema.pre("findOneAndUpdate", async function (next) {
 
     tour.slug = slug;
   }
-  this.setUpdate(tour)
+  this.setUpdate(tour);
 
   next();
 });
 
-export const Tour = model<ITour>("Tour",tourSchema)
+export const Tour = model<ITour>("Tour", tourSchema);

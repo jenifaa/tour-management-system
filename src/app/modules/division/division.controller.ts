@@ -21,7 +21,7 @@ const getAllDivisions = catchAsync(async(req:Request,res:Response)=>{
       sendResponse(res,{
         statusCode:201,
         success:true,
-        message:"Division retrived",
+        message:"Division retrieved",
         data:result.data,
         meta: result.meta
     })
