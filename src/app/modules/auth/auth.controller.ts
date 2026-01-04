@@ -130,7 +130,7 @@ const changePassword = catchAsync(
 const setPassword = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     const decodedToken = req.user as JwtPayload;
-  const { password } = req.body || {};
+    const { password } = req.body || {};
     await AuthServices.setPassword(decodedToken.userId, password);
 
     sendResponse(res, {
@@ -143,38 +143,32 @@ const setPassword = catchAsync(
 );
 const forgetPassword = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
-    const decodedToken = req.user as JwtPayload;
-  const { password } = req.body || {};
-    await AuthServices.forgetPassword(decodedToken.userId, password);
+    const { email } = req.body || {};
+    await AuthServices.forgetPassword(email);
 
     sendResponse(res, {
       success: true,
       statusCode: httpStatus.OK,
-      message: "Password Set Successfully",
+      message: "Email Sent Successfully",
       data: null,
     });
   }
 );
-// const resetPassword = catchAsync(
-//   async (req: Request, res: Response, next: NextFunction) => {
-//     const oldPassword = req.body.oldPassword;
-//     const newPassword = req.body.newPassword;
-//     const decodedToken = req.user;
+const resetPassword = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+ 
+    const decodedToken = req.user;
 
-//     await AuthServices.resetPassword(
-//       oldPassword,
-//       newPassword,
-//       decodedToken as JwtPayload
-//     );
+    await AuthServices.resetPassword(req.body, decodedToken as JwtPayload);
 
-//     sendResponse(res, {
-//       success: true,
-//       statusCode: httpStatus.OK,
-//       message: "Password Changed Successfully",
-//       data: null,
-//     });
-//   }
-// );
+    sendResponse(res, {
+      success: true,
+      statusCode: httpStatus.OK,
+      message: "Password Reset Successfully",
+      data: null,
+    });
+  }
+);
 
 const googleCallbackController = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
@@ -201,6 +195,6 @@ export const AuthControllers = {
   changePassword,
   setPassword,
   forgetPassword,
-  // resetPassword,
+  resetPassword,
   googleCallbackController,
 };
