@@ -5,14 +5,16 @@ import httpStatus from "http-status-codes";
 import bcryptjs from "bcryptjs";
 import { envVars } from "../../config/env";
 import { JwtPayload } from "jsonwebtoken";
+import { QueryBuilder } from "../../utils/QueryBuilder";
+import { userSearchableFields } from "./user.constant";
 const createUser = async (payload: Partial<IUser>) => {
   const { email, password, ...rest } = payload;
 
   const isUserExist = await User.findOne({ email });
 
-  // if (isUserExist) {
-  //   throw new AppError(httpStatus.BAD_REQUEST, "User Already Exist");
-  // }
+  if (isUserExist) {
+    throw new AppError(httpStatus.BAD_REQUEST, "User Already Exist");
+  }
 
   const hashedPassword = await bcryptjs.hash(
     password as string,
@@ -31,17 +33,36 @@ const createUser = async (payload: Partial<IUser>) => {
   });
   return user;
 };
+const getAllUsers = async (query: Record<string, string>) => {
+  const queryBuilder = new QueryBuilder(User.find(), query);
+  const usersData = queryBuilder
+    .filter()
+    .search(userSearchableFields)
+    .sort()
+    .fields()
+    .paginate();
 
-const getAllUsers = async () => {
-  const users = await User.find({});
-
-  const totalUsers = await User.countDocuments();
+  const [data, meta] = await Promise.all([
+    usersData.build(),
+    queryBuilder.getMeta(),
+  ]);
 
   return {
-    data: users,
-    meta: {
-      total: totalUsers,
-    },
+    data,
+    meta,
+  };
+};
+const getMe = async (userId: string) => {
+  const user = await User.findById(userId).select("-password");
+  return {
+    data: user,
+  };
+};
+
+const getSingleUser = async (id: string) => {
+  const user = await User.findById(id).select("-password");
+  return {
+    data: user,
   };
 };
 
@@ -54,7 +75,6 @@ const updateUser = async (
   if (!ifUserExist) {
     throw new AppError(httpStatus.NOT_FOUND, "User Not FOund");
   }
-
 
   if (payload.role) {
     if (decodedToken.role === Role.USER || decodedToken.role === Role.GUIDE) {
@@ -88,5 +108,7 @@ const updateUser = async (
 export const UserServices = {
   createUser,
   getAllUsers,
+  getMe,
+  getSingleUser,
   updateUser,
 };

@@ -27,18 +27,14 @@ export const createUserZodSchema = z.object({
 
   phone: z
     .string()
-    .regex(/^(?:\+?88)?01[3-9]\d{8}$/, {
+    .regex(/^(?:\+?88)?01[0-9]\d{8}$/, {
       message: "Invalid Bangladeshi phone number",
     })
     .optional(),
 
   address: z
     .string()
-    .min(5, { message: "Address must be at least 5 characters long" })
-    .regex(/(Bangladesh|BD)$/i, {
-      message: "Address must be located in Bangladesh",
-    })
-    .optional(),
+    .min(5, { message: "Address must be at least 5 characters long" }).optional(),
 });
 export const updateUserZodSchema = z.object({
   name: z
@@ -66,10 +62,9 @@ export const updateUserZodSchema = z.object({
 
   phone: z
     .string()
-    .regex(/^(?:\+?88)?01[3-9]\d{8}$/, {
+    .regex(/^(?:\+?88)?01[0-9]\d{8}$/, {
       message: "Invalid Bangladeshi phone number",
-    })
-    .optional(),
+    }).optional(),
 
   role: z.enum(Object.values(Role) as [string]).optional(),
   isActive: z.enum(Object.values(IsActive) as [string]).optional(),
@@ -78,9 +73,5 @@ export const updateUserZodSchema = z.object({
 
   address: z
     .string()
-    .min(5, { message: "Address must be at least 5 characters long" })
-    .regex(/(Bangladesh|BD)$/i, {
-      message: "Address must be located in Bangladesh",
-    })
-    .optional(),
+    .min(5, { message: "Address must be at least 5 characters long" }).optional(),
 });

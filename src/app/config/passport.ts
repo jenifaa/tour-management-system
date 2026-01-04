@@ -1,3 +1,4 @@
+// import httpStatus from "http-status-codes";
 import bcryptjs from "bcryptjs";
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable no-console */
@@ -9,8 +10,9 @@ import {
 } from "passport-google-oauth20";
 import { envVars } from "./env";
 import { User } from "../modules/user/user.model";
-import { Role } from "../modules/user/user.interface";
+import { IsActive, Role } from "../modules/user/user.interface";
 import { Strategy as LocalStrategy } from "passport-local";
+// import AppError from "../errorHelpers/AppError";
 
 passport.use(
   new LocalStrategy(
@@ -24,6 +26,20 @@ passport.use(
 
         if (!isUserExist) {
           return done(null, false, { message: "User does not exist" });
+        }
+        if (!isUserExist.isVerified) {
+         return done("User is not verified");
+        }
+
+        if (
+          isUserExist.isActive === IsActive.BLOCKED ||
+          isUserExist.isActive === IsActive.INACTIVE
+        ) {
+         return  done(`User is ${isUserExist.isActive}`);
+        }
+        if (isUserExist.isDeleted) {
+          // throw new AppError(httpStatus.BAD_GATEWAY, "User is deleted");
+          return done("User is deleted")
         }
 
         const isGoogleAuthenticated = isUserExist.auths.some(
@@ -71,9 +87,24 @@ passport.use(
         if (!email) {
           return done(null, false, { message: "No email Found" });
         }
-        let user = await User.findOne({ email });
-        if (!user) {
-          user = await User.create({
+        let isUserExist = await User.findOne({ email });
+
+        if (isUserExist && !isUserExist.isVerified) {
+         return  done(null, false, { message: "User is not verified" });
+        }
+
+        if (isUserExist && 
+          (isUserExist.isActive === IsActive.BLOCKED ||
+          isUserExist.isActive === IsActive.INACTIVE)
+        ) {
+         return  done(null,false,{message:`User is ${isUserExist.isActive}`});
+        }
+        if (isUserExist &&  isUserExist.isDeleted) {
+         return done(null,false, {message:"User is deleted"})
+        }
+
+        if (!isUserExist) {
+          isUserExist = await User.create({
             email,
             name: profile.displayName,
             picture: profile.photos?.[0].value,
@@ -88,7 +119,7 @@ passport.use(
           });
         }
 
-        return done(null, user);
+        return done(null, isUserExist);
       } catch (error) {
         console.log("Google strategy error", error);
         return done(error);
