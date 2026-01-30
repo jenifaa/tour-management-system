@@ -48,11 +48,24 @@ const cancelPayment = catchAsync(async (req: Request, res: Response) => {
     res.redirect(`${envVars.SSL.SSL_CANCEL_FRONTEND_URL}?transactionId=${query.transactionId}&message=${result.message}&amount=${query.amount}&status=${query.status}`);
   }
 });
+const getInvoiceDownloadUrl = catchAsync(async (req: Request, res: Response) => {
+  const {paymentId} = req.params
+  const result = await PaymentService.getInvoiceDownloadUrl(paymentId)
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: "Invoice url retrieve  successfully",
+    data: result,
+  });
+ 
+});
+
 
 
 export const PaymentController = {
   successPayment,
   failPayment,
   cancelPayment,
-  initPayment
+  initPayment,
+  getInvoiceDownloadUrl
 };
