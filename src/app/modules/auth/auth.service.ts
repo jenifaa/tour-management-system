@@ -63,6 +63,8 @@ const changePassword = async (
 ) => {
   const user = await User.findById(decodedToken.userId);
 
+
+  
   const isOldPasswordMatch = await bcryptjs.compare(
     oldPassword,
     user!.password as string

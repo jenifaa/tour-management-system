@@ -13,6 +13,7 @@ const transporter = nodemailer.createTransport({
     user: envVars.EMAIL_SENDER.SMTP_USER,
     pass: envVars.EMAIL_SENDER.SMTP_PASS,
   },
+
 });
 
 interface SendEmailOptions {
@@ -43,15 +44,16 @@ export const sendEmail = async ({
       subject: subject,
       html: html,
       attachments: attachments?.map((attachment) => ({
-        fileName: attachment.filename,
+        filename: attachment.filename,
         content: attachment.content,
         contentType: attachment.contentType,
       })),
     });
 
     console.log(`\u2709\uFE0F Email send to ${to}: ${info.messageId}`);
-  } catch (error) {
-    console.log("Email sending error", error);
-    throw new AppError(401, "email error");
-  }
+  } catch (error: any) {
+  console.error("Email sending error:", error.message);
+  throw new AppError(500, error.message || "Email sending failed");
+}
+
 };
