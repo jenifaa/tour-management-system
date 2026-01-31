@@ -6,3 +6,9 @@ export interface ISSLCommerz {
   phoneNumber: string;
   address: string;
 }
+export interface ISSLCommerzResponse {
+  status: string;
+  GatewayPageURL: string;
+  sessionkey?: string;
+  failedreason?: string;
+}
