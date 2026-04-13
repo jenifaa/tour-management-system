@@ -121,6 +121,14 @@ const successPayment = async (query: Record<string, string>) => {
         throw error
     }
 };
+
+
+
+
+
+
+
+
 const failPayment = async (query: Record<string, string>) => {
 
     // Update Booking Status to FAIL
