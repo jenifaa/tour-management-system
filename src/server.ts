@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable no-console */
 import { Server } from "http";
 
@@ -7,24 +8,30 @@ import { envVars } from "./app/config/env";
 import { seedSuperAdmin } from "./app/utils/seedSuperAdmin";
 import { connectRedis } from "./app/config/redis.config";
 let server: Server;
+let isConnected = false;
 
-const startServer = async () => {
+const initializeContext = async () => {
+  if (isConnected) return;
   try {
-    await mongoose.connect(envVars.DB_URL);
-    console.log("connected to db");
-    server = app.listen(envVars.PORT, () => {
-      console.log(`Server is listening at ${envVars.PORT}`);
-    });
+    if (mongoose.connection.readyState !== 1) {
+      await mongoose.connect(envVars.DB_URL);
+      console.log("Connected to db");
+    }
+    await connectRedis();
+    await seedSuperAdmin();
+    isConnected = true;
   } catch (error) {
     console.log(error);
   }
 };
 
-(async () => {
-  await connectRedis();
-  await startServer();
-  await seedSuperAdmin();
-})();
+if (!process.env.VERCEL) {
+  initializeContext().then(() => {
+    server = app.listen(envVars.PORT, () => {
+      console.log(`Server is listening at ${envVars.PORT}`);
+    });
+  });
+}
 
 process.on("SIGTERM", () => {
   console.log("SIGTERM detected");
@@ -53,3 +60,8 @@ process.on("uncaughtException", () => {
   }
   process.exit(1);
 });
+
+export default async (req: any, res: any) => {
+  await initializeContext(); 
+  return app(req, res);
+};
