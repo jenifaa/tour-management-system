@@ -33,15 +33,17 @@ passport_1.default.use(new passport_local_1.Strategy({
             return done(null, false, { message: "User does not exist" });
         }
         if (!isUserExist.isVerified) {
-            return done("User is not verified");
+            return done(null, false, { message: "User is not verified" });
         }
         if (isUserExist.isActive === user_interface_1.IsActive.BLOCKED ||
             isUserExist.isActive === user_interface_1.IsActive.INACTIVE) {
-            return done(`User is ${isUserExist.isActive}`);
+            return done(null, false, {
+                message: `User is ${isUserExist.isActive}`,
+            });
         }
         if (isUserExist.isDeleted) {
             // throw new AppError(httpStatus.BAD_GATEWAY, "User is deleted");
-            return done("User is deleted");
+            return done(null, false, { message: "User is deleted" });
         }
         const isGoogleAuthenticated = isUserExist.auths.some((providerObjects) => providerObjects.provider == "google");
         if (isGoogleAuthenticated && !isUserExist.password) {
@@ -49,7 +51,7 @@ passport_1.default.use(new passport_local_1.Strategy({
                 message: "You have authenticated through google login. So , if you want login with credentials , then at first login with  google and set a password for you gmail",
             });
         }
-        const isPasswordMatched = bcryptjs_1.default.compare(password, isUserExist.password);
+        const isPasswordMatched = yield bcryptjs_1.default.compare(password, isUserExist.password);
         if (!isPasswordMatched) {
             return done(null, false, { message: "Password does not match" });
         }
@@ -78,7 +80,9 @@ passport_1.default.use(new passport_google_oauth20_1.Strategy({
         if (isUserExist &&
             (isUserExist.isActive === user_interface_1.IsActive.BLOCKED ||
                 isUserExist.isActive === user_interface_1.IsActive.INACTIVE)) {
-            return done(null, false, { message: `User is ${isUserExist.isActive}` });
+            return done(null, false, {
+                message: `User is ${isUserExist.isActive}`,
+            });
         }
         if (isUserExist && isUserExist.isDeleted) {
             return done(null, false, { message: "User is deleted" });

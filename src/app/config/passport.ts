@@ -28,22 +28,24 @@ passport.use(
           return done(null, false, { message: "User does not exist" });
         }
         if (!isUserExist.isVerified) {
-         return done("User is not verified");
+          return done(null, false, { message: "User is not verified" });
         }
 
         if (
           isUserExist.isActive === IsActive.BLOCKED ||
           isUserExist.isActive === IsActive.INACTIVE
         ) {
-         return  done(`User is ${isUserExist.isActive}`);
+          return done(null, false, {
+            message: `User is ${isUserExist.isActive}`,
+          });
         }
         if (isUserExist.isDeleted) {
           // throw new AppError(httpStatus.BAD_GATEWAY, "User is deleted");
-          return done("User is deleted")
+          return done(null, false, { message: "User is deleted" });
         }
 
         const isGoogleAuthenticated = isUserExist.auths.some(
-          (providerObjects) => providerObjects.provider == "google"
+          (providerObjects) => providerObjects.provider == "google",
         );
 
         if (isGoogleAuthenticated && !isUserExist.password) {
@@ -52,9 +54,9 @@ passport.use(
               "You have authenticated through google login. So , if you want login with credentials , then at first login with  google and set a password for you gmail",
           });
         }
-        const isPasswordMatched = bcryptjs.compare(
+        const isPasswordMatched = await bcryptjs.compare(
           password as string,
-          isUserExist.password as string
+          isUserExist.password as string,
         );
 
         if (!isPasswordMatched) {
@@ -65,8 +67,8 @@ passport.use(
         console.log(error);
         done(error);
       }
-    }
-  )
+    },
+  ),
 );
 
 passport.use(
@@ -80,7 +82,7 @@ passport.use(
       accessToken: string,
       refreshToken: string,
       profile: Profile,
-      done: VerifyCallback
+      done: VerifyCallback,
     ) => {
       try {
         const email = profile.emails?.[0].value;
@@ -90,17 +92,20 @@ passport.use(
         let isUserExist = await User.findOne({ email });
 
         if (isUserExist && !isUserExist.isVerified) {
-         return  done(null, false, { message: "User is not verified" });
+          return done(null, false, { message: "User is not verified" });
         }
 
-        if (isUserExist && 
+        if (
+          isUserExist &&
           (isUserExist.isActive === IsActive.BLOCKED ||
-          isUserExist.isActive === IsActive.INACTIVE)
+            isUserExist.isActive === IsActive.INACTIVE)
         ) {
-         return  done(null,false,{message:`User is ${isUserExist.isActive}`});
+          return done(null, false, {
+            message: `User is ${isUserExist.isActive}`,
+          });
         }
-        if (isUserExist &&  isUserExist.isDeleted) {
-         return done(null,false, {message:"User is deleted"})
+        if (isUserExist && isUserExist.isDeleted) {
+          return done(null, false, { message: "User is deleted" });
         }
 
         if (!isUserExist) {
@@ -124,8 +129,8 @@ passport.use(
         console.log("Google strategy error", error);
         return done(error);
       }
-    }
-  )
+    },
+  ),
 );
 
 passport.serializeUser((user: any, done: (err: any, id?: unknown) => void) => {

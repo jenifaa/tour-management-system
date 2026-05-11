@@ -7,7 +7,7 @@ import { ITour } from "./tour.interface";
 const createTour = catchAsync(async (req: Request, res: Response) => {
   const payload: ITour = {
     ...req.body,
-    images: (req.files as Express.Multer.File[])?.map(file=> file.path),
+    images: (req.files as Express.Multer.File[])?.map((file) => file.path),
   };
   const result = await TourService.createTour(payload);
   sendResponse(res, {
@@ -33,7 +33,7 @@ const getAllTours = catchAsync(async (req: Request, res: Response) => {
 const updateTour = catchAsync(async (req: Request, res: Response) => {
   const payload: ITour = {
     ...req.body,
-    images: (req.files as Express.Multer.File[])?.map(file=> file.path),
+    images: (req.files as Express.Multer.File[])?.map((file) => file.path),
   };
 
   const result = await TourService.updateTours(req.params.id, payload);
@@ -46,7 +46,7 @@ const updateTour = catchAsync(async (req: Request, res: Response) => {
 });
 const deleteTour = catchAsync(async (req: Request, res: Response) => {
   const { id } = req.params;
-  
+
   const result = await TourService.deleteTour(id);
   sendResponse(res, {
     statusCode: 200,
@@ -67,7 +67,10 @@ const createTourType = catchAsync(async (req: Request, res: Response) => {
   });
 });
 const getAllTourTypes = catchAsync(async (req: Request, res: Response) => {
-  const result = await TourService.getAllTourTypes();
+  const query = req.query;
+  const result = await TourService.getAllTourTypes(
+    query as Record<string, string>,
+  );
   sendResponse(res, {
     statusCode: 200,
     success: true,
@@ -75,6 +78,17 @@ const getAllTourTypes = catchAsync(async (req: Request, res: Response) => {
     data: result,
   });
 });
+const getSingleTourType = catchAsync(async (req: Request, res: Response) => {
+  const id = req.params.id;
+  const result = await TourService.getSingleTourType(id);
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: "Tour type retrieved successfully",
+    data: result,
+  });
+});
+
 const updateTourType = catchAsync(async (req: Request, res: Response) => {
   const { id } = req.params;
   const { name } = req.body;
@@ -106,4 +120,5 @@ export const TourController = {
   getAllTours,
   updateTour,
   deleteTour,
+  getSingleTourType,
 };

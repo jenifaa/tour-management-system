@@ -18,23 +18,30 @@ const env_1 = require("./app/config/env");
 const seedSuperAdmin_1 = require("./app/utils/seedSuperAdmin");
 const redis_config_1 = require("./app/config/redis.config");
 let server;
-const startServer = () => __awaiter(void 0, void 0, void 0, function* () {
+let isConnected = false;
+const initializeContext = () => __awaiter(void 0, void 0, void 0, function* () {
+    if (isConnected)
+        return;
     try {
-        yield mongoose_1.default.connect(env_1.envVars.DB_URL);
-        console.log("connected to db");
-        server = app_1.default.listen(env_1.envVars.PORT, () => {
-            console.log(`Server is listening at ${env_1.envVars.PORT}`);
-        });
+        if (mongoose_1.default.connection.readyState !== 1) {
+            yield mongoose_1.default.connect(env_1.envVars.DB_URL);
+            console.log("Connected to db");
+        }
+        yield (0, redis_config_1.connectRedis)();
+        yield (0, seedSuperAdmin_1.seedSuperAdmin)();
+        isConnected = true;
     }
     catch (error) {
         console.log(error);
     }
 });
-(() => __awaiter(void 0, void 0, void 0, function* () {
-    yield (0, redis_config_1.connectRedis)();
-    yield startServer();
-    yield (0, seedSuperAdmin_1.seedSuperAdmin)();
-}))();
+if (!process.env.VERCEL) {
+    initializeContext().then(() => {
+        server = app_1.default.listen(env_1.envVars.PORT, () => {
+            console.log(`Server is listening at ${env_1.envVars.PORT}`);
+        });
+    });
+}
 process.on("SIGTERM", () => {
     console.log("SIGTERM detected");
     if (server) {
@@ -61,4 +68,8 @@ process.on("uncaughtException", () => {
         });
     }
     process.exit(1);
+});
+exports.default = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    yield initializeContext();
+    return (0, app_1.default)(req, res);
 });
