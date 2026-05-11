@@ -41,7 +41,7 @@ const credentialsLogin = (payload) => __awaiter(void 0, void 0, void 0, function
     if (!isUserExist) {
         throw new AppError_1.default(http_status_codes_1.default.BAD_REQUEST, "Email does not Exist");
     }
-    const isPasswordMatched = bcryptjs_1.default.compare(password, isUserExist.password);
+    const isPasswordMatched = yield bcryptjs_1.default.compare(password, isUserExist.password);
     if (!isPasswordMatched) {
         throw new AppError_1.default(http_status_codes_1.default.BAD_REQUEST, "Incorrect password");
     }
